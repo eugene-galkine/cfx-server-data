@@ -1,1 +1,1 @@
-G:\games\FiveM-server\FXServer.exe +exec server.cfg
+..\..\FiveM-server\FXServer.exe +exec server.cfg
