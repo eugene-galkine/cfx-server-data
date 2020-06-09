@@ -28,7 +28,13 @@ Citizen.CreateThread(function()
         Citizen.Wait(0)
         SetPedDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0x95E3D6257B166CF2
         SetScenarioPedDensityMultiplierThisFrame(0, 0) -- https://runtime.fivem.net/doc/natives/#_0x7A556143A1C03898
+		SetRandomVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0xB3B3359379FE77D3
+		SetParkedVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0xEAE6DCC7EEE3DB1D
         SetVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0x245A6883D966D537
+		if GetPlayerWantedLevel(PlayerId()) ~= 0 then
+            SetPlayerWantedLevel(PlayerId(), 0, false) -- https://runtime.fivem.net/doc/natives/?_0x39FF19C64EF7DA5B
+            SetPlayerWantedLevelNow(PlayerId(), false)
+        end
     end 
 end)
 
@@ -89,4 +95,29 @@ RegisterCommand("weapon", function(source, args)
 	local weapon = args[1] or "weapon_pistol"
 	GiveWeaponToPed(PlayerPedId(), GetHashKey(weapon), 999, false, false)
 end, false)
+
+RegisterCommand("spawn-ped", function()
+	models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
+	models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01"} -- todo
+	models_f = { "a_f_y_fitness_01", "a_f_y_fitness_02", "s_f_m_fembarber"} -- todo
+	
+	local pos = GetEntityCoords(PlayerPedId())
+	ped = "a_m_y_bevhills_01"
+	RequestModel(ped)
+	while not HasModelLoaded(ped) do 
+		Citizen.Wait(1)
+	end
+	
+	--[[refer above (4 only works for male peds and 5 is for female peds)]]
+	newPed = CreatePed(4, ped, pos.x + 5, pos.y, pos.z , 0.0 --[[float (int) Heading]], false, true)
+	--- now lets give the ped some attributes -> https://runtime.fivem.net/doc/natives/#_0x9F7794730795E019
+	SetPedCombatAttributes(newPed, 0, true) --[[ BF_CanUseCover ]]
+	SetPedCombatAttributes(newPed, 5, true) --[[ BF_CanFightArmedPedsWhenNotArmed ]]
+	SetPedCombatAttributes(newPed, 46, true) --[[ BF_AlwaysFight ]]
+	SetPedFleeAttributes(newPed, 0, true) --[[ allows/disallows the ped to flee from a threat i think]]
+	
+	SetPedMaxHealth(newPed, 10)
+end, false)
+
+
 
