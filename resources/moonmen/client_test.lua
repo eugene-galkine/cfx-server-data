@@ -1,6 +1,9 @@
-local spawnPos = vector3(686.245, 577.950, 130.461)
-
 --void REGISTER_COMMAND(char* commandName, func handler, BOOL restricted);
+
+local spawnPos = vector3(-988, -2985, 13.95)
+
+AddRelationshipGroup('cops')
+AddRelationshipGroup('robbers')
 
 AddEventHandler('onClientGameTypeStart', function()
     exports.spawnmanager:setAutoSpawnCallback(function()
@@ -20,24 +23,24 @@ AddEventHandler('onClientGameTypeStart', function()
     exports.spawnmanager:forceRespawn()
 end)
 
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        SetPedDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0x95E3D6257B166CF2
+        SetScenarioPedDensityMultiplierThisFrame(0, 0) -- https://runtime.fivem.net/doc/natives/#_0x7A556143A1C03898
+        SetVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0x245A6883D966D537
+    end 
+end)
+
 RegisterCommand("test",  function()
 	TriggerEvent('chatMessage', "[SERVER]", {100, 100, 100}, "banana")
 end, false)
 
-FormatCoord = function(coord)
-	if coord == nil then
-		return "unknown"
-	end
-
-	return tonumber(string.format("%.2f", coord))
-end
-
 RegisterCommand("where", function() 
-	local playerPed = PlayerPedId()
-	local playerX, playerY, playerZ = table.unpack(GetEntityCoords(playerPed))
+	local pos = GetEntityCoords(PlayerPedId())
 
 	TriggerEvent('chat:addMessage', {
-                args = {("X: %s Y: %s Z: %s"):format(FormatCoord(playerX), FormatCoord(playerY), FormatCoord(playerZ))}
+                args = {("X:%s  Y:%s  Z:%s"):format(pos.x, pos.y, pos.z)}
             })
 end, false)
 
@@ -75,3 +78,15 @@ RegisterCommand("spawn", function(source, args)
     -- release the model
     SetModelAsNoLongerNeeded(vehicleName)
 end, false)
+
+RegisterCommand("set-team", function(source, args)
+	
+end, false)
+
+RegisterCommand("weapon", function(source, args)
+	-- weapon_pistol
+	-- weapon_pumpshotgun
+	local weapon = args[1] or "weapon_pistol"
+	GiveWeaponToPed(PlayerPedId(), GetHashKey(weapon), 999, false, false)
+end, false)
+
