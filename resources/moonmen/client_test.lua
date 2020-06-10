@@ -2,9 +2,6 @@
 
 local spawnPos = vector3(-988, -2985, 13.95)
 
-AddRelationshipGroup('cops')
-AddRelationshipGroup('robbers')
-
 AddEventHandler('onClientGameTypeStart', function()
     exports.spawnmanager:setAutoSpawnCallback(function()
         exports.spawnmanager:spawnPlayer({
@@ -96,27 +93,55 @@ RegisterCommand("weapon", function(source, args)
 	GiveWeaponToPed(PlayerPedId(), GetHashKey(weapon), 999, false, false)
 end, false)
 
+AddRelationshipGroup("robbers")
+AddRelationshipGroup("civ")
+
 RegisterCommand("spawn-ped", function()
 	models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 	models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01"} -- todo
-	models_f = { "a_f_y_fitness_01", "a_f_y_fitness_02", "s_f_m_fembarber"} -- todo
+	models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01"} -- todo
 	
 	local pos = GetEntityCoords(PlayerPedId())
-	ped = "a_m_y_bevhills_01"
+	ped = "csb_reporter"
 	RequestModel(ped)
 	while not HasModelLoaded(ped) do 
 		Citizen.Wait(1)
 	end
 	
 	--[[refer above (4 only works for male peds and 5 is for female peds)]]
-	newPed = CreatePed(4, ped, pos.x + 5, pos.y, pos.z , 0.0 --[[float (int) Heading]], false, true)
-	--- now lets give the ped some attributes -> https://runtime.fivem.net/doc/natives/#_0x9F7794730795E019
-	SetPedCombatAttributes(newPed, 0, true) --[[ BF_CanUseCover ]]
-	SetPedCombatAttributes(newPed, 5, true) --[[ BF_CanFightArmedPedsWhenNotArmed ]]
-	SetPedCombatAttributes(newPed, 46, true) --[[ BF_AlwaysFight ]]
-	SetPedFleeAttributes(newPed, 0, true) --[[ allows/disallows the ped to flee from a threat i think]]
-	
+	newPed = CreatePed(4, ped, pos.x + 5, pos.y, pos.z , 0.0, false, true)
+
+	SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
+	SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
 	SetPedMaxHealth(newPed, 10)
+	
+	-- ped, x, y, z, speed, timeout, heading, distance to slide
+	-- TaskGoStraightToCoord(newPed, pos.x,  pos.y + 30, pos.z, 1, 999999999, 0, 0)
+	
+	TaskFlushRoute()
+	TaskExtendRoute(pos.x + 20, pos.y, pos.z)
+	TaskExtendRoute(pos.x + 5, pos.y + 20, pos.z)
+	TaskExtendRoute(pos.x - 10, pos.y + 15, pos.z) 
+	TaskFollowPointRoute(newPed, 1, 0)
+	
+	
+	-- TaskFollow... TaskGo
+	
+	-- TaskStartScenarioInPlace(newPed, "PROP_HUMAN_STAND_IMPATIENT", 0, true)
+	-- Good scenarios to use
+	-- 	PROP_HUMAN_STAND_IMPATIENT
+	--  WORLD_HUMAN_HANG_OUT_STREET
+	--  WORLD_HUMAN_SMOKING
+	--  WORLD_HUMAN_AA_COFFEE
+	--  WORLD_HUMAN_AA_SMOKE
+	--  CODE_HUMAN_CROSS_ROAD_WAIT
+	--  WORLD_HUMAN_CLIPBOARD
+	--  WORLD_HUMAN_GUARD_STAND
+	
+	
+	
+	-- SetForcePedFootstepsTracks(true) ????
+	-- SetPedIsDrunk() ?????
 end, false)
 
 
