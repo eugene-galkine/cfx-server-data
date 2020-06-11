@@ -98,8 +98,6 @@ AddRelationshipGroup("civ")
 
 RegisterCommand("spawn-ped", function()
 	models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
-	models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01"} -- todo
-	models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01"} -- todo
 	
 	local pos = GetEntityCoords(PlayerPedId())
 	ped = "csb_reporter"
@@ -115,17 +113,18 @@ RegisterCommand("spawn-ped", function()
 	SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
 	SetPedMaxHealth(newPed, 10)
 	
+	--TaskWanderInArea(newPed, pos.x + 5, pos.y, pos.z, 20.0, 5.0, 0.0)
+	TaskWanderStandard(newPed, 1.0, 1)
+	
 	-- ped, x, y, z, speed, timeout, heading, distance to slide
 	-- TaskGoStraightToCoord(newPed, pos.x,  pos.y + 30, pos.z, 1, 999999999, 0, 0)
 	
-	TaskFlushRoute()
-	TaskExtendRoute(pos.x + 20, pos.y, pos.z)
-	TaskExtendRoute(pos.x + 5, pos.y + 20, pos.z)
-	TaskExtendRoute(pos.x - 10, pos.y + 15, pos.z) 
-	TaskFollowPointRoute(newPed, 1, 0)
-	
-	
-	-- TaskFollow... TaskGo
+	-- follow waypoints
+	-- TaskFlushRoute()
+	-- TaskExtendRoute(pos.x + 20, pos.y, pos.z)
+	-- TaskExtendRoute(pos.x + 5, pos.y + 20, pos.z)
+	-- TaskExtendRoute(pos.x - 10, pos.y + 15, pos.z) 
+	-- TaskFollowPointRoute(newPed, 1, 0)
 	
 	-- TaskStartScenarioInPlace(newPed, "PROP_HUMAN_STAND_IMPATIENT", 0, true)
 	-- Good scenarios to use
@@ -137,11 +136,33 @@ RegisterCommand("spawn-ped", function()
 	--  CODE_HUMAN_CROSS_ROAD_WAIT
 	--  WORLD_HUMAN_CLIPBOARD
 	--  WORLD_HUMAN_GUARD_STAND
-	
-	
-	
+		
 	-- SetForcePedFootstepsTracks(true) ????
 	-- SetPedIsDrunk() ?????
+end, false)
+
+RegisterCommand("spawn-group", function()
+	models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01"}
+	models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01"} -- todo
+	
+	local pos = GetEntityCoords(PlayerPedId())
+	
+	for i=1,10,1 do
+		ped = GetHashKey(models_m[math.random(1, #models_m)])
+		
+		RequestModel(ped)
+		while not HasModelLoaded(ped) do 
+			Citizen.Wait(1)
+		end
+		
+		--[[refer above (4 only works for male peds and 5 is for female peds)]]
+		newPed = CreatePed(4, ped, pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z , 0.0, false, true)
+		
+		SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
+		SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
+	
+		TaskWanderStandard(newPed, 1.0, 1)
+	end
 end, false)
 
 
