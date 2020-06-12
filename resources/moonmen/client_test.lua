@@ -147,8 +147,22 @@ RegisterCommand("spawn-group", function()
 	
 	local pos = GetEntityCoords(PlayerPedId())
 	
+	-- for x=1,#models_m do
+	-- 	RequestModel(model)
+	-- end
+	-- for x=1,#models_f do
+	-- 	RequestModel(model)
+	-- end
+
 	for i=1,10,1 do
-		ped = GetHashKey(models_m[math.random(1, #models_m)])
+		local ped = nil
+		local type = 4
+		if math.random(1, 2) == 1 then 
+			ped = GetHashKey(models_m[math.random(1, #models_m)])
+		else 
+			ped = GetHashKey(models_f[math.random(1, #models_f)])
+			type = 5
+		end
 		
 		RequestModel(ped)
 		while not HasModelLoaded(ped) do 
@@ -156,14 +170,52 @@ RegisterCommand("spawn-group", function()
 		end
 		
 		--[[refer above (4 only works for male peds and 5 is for female peds)]]
-		newPed = CreatePed(4, ped, pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z , 0.0, false, true)
+		newPed = CreatePed(type, ped, pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z , 0.0, false, true)
 		
 		SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
 		SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
 	
-		TaskWanderStandard(newPed, 1.0, 1)
+		-- TaskWanderStandard(newPed, 1.0, 1)
+
+		TaskFlushRoute()
+		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		TaskFollowPointRoute(newPed, 1, 0)
+
+		SetModelAsNoLongerNeeded(ped)
 	end
+
+	-- for x=1,#models_m do
+	-- 	SetModelAsNoLongerNeeded(model)
+	-- end
+	-- for x=1,#models_f do
+	-- 	SetModelAsNoLongerNeeded(model)
+	-- end
 end, false)
 
+-- TODO must stop playernames to hide names
+
+
+-- RequestModel(object_model)
+-- local iter_for_request = 1
+-- while not HasModelLoaded(object_model) and iter_for_request < 5 do
+-- 	Citizen.Wait(500)				
+-- 	iter_for_request = iter_for_request + 1
+-- end
+-- if not HasModelLoaded(object_model) then
+-- 	SetModelAsNoLongerNeeded(object_model)
+-- else
+-- 	local ped = PlayerPedId()
+-- 	local x,y,z = table.unpack(GetEntityCoords(ped))
+-- 	local created_object = CreateObjectNoOffset(object_model, x, y, z, 1, 0, 1)
+-- 	PlaceObjectOnGroundProperly(created_object)
+-- 	FreezeEntityPosition(created_object,true)
+-- 	SetModelAsNoLongerNeeded(object_model)
+-- end
 
 
