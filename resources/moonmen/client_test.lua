@@ -146,13 +146,6 @@ RegisterCommand("spawn-group", function()
 	models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01"} -- todo
 	
 	local pos = GetEntityCoords(PlayerPedId())
-	
-	-- for x=1,#models_m do
-	-- 	RequestModel(model)
-	-- end
-	-- for x=1,#models_f do
-	-- 	RequestModel(model)
-	-- end
 
 	for i=1,10,1 do
 		local ped = nil
@@ -174,8 +167,6 @@ RegisterCommand("spawn-group", function()
 		
 		SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
 		SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
-	
-		-- TaskWanderStandard(newPed, 1.0, 1)
 
 		TaskFlushRoute()
 		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
@@ -186,16 +177,14 @@ RegisterCommand("spawn-group", function()
 		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
 		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
 		TaskFollowPointRoute(newPed, 1, 0)
-
-		SetModelAsNoLongerNeeded(ped)
 	end
 
-	-- for x=1,#models_m do
-	-- 	SetModelAsNoLongerNeeded(model)
-	-- end
-	-- for x=1,#models_f do
-	-- 	SetModelAsNoLongerNeeded(model)
-	-- end
+	for x=1,#models_m do
+		SetModelAsNoLongerNeeded(model)
+	end
+	for x=1,#models_f do
+		SetModelAsNoLongerNeeded(model)
+	end
 end, false)
 
 -- TODO must stop playernames to hide names
