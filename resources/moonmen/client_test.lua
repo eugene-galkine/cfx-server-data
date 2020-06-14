@@ -2,40 +2,47 @@ RegisterNetEvent("setTeam")
 
 local spawnPos = vector3(233.3, 215.6, 106.28)
 
-local team = nil
+local team = 0
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
-local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01"}
-local models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01"} -- todo
+local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
+local models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
 AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
 
 AddEventHandler('onClientGameTypeStart', function()
-	TriggerServerEvent("requestTeam", PlayerId())
+	-- TriggerServerEvent("requestTeam", PlayerId())
 	-- while team == nil do
 	-- 	Citizen.wait(10)
 	-- end
-
-	model_to_use = nil
+	
 	if GetPlayerName(PlayerId()) == "Limoncio2" then
-		model_to_use = GetHashKey(models_cop[math.random(1, #models_cop)])
-		SetPedRelationshipGroupHash(PlayerPedId(), "COP")
+		team = 1
+		-- SetPedRelationshipGroupHash(PlayerPedId(), "COP")
 	else
-		model_to_use = GetHashKey(models_m[math.random(1, #models_m)])
+		team = 0
 	end
-	-- if team == "COP" then
-	-- 	model_to_use = "S_M_M_Armoured_01"
-	-- else
-	-- 	model_to_use = "csb_reporter"
-	-- end
 
-    exports.spawnmanager:setAutoSpawnCallback(function()
+	exports.spawnmanager:setAutoSpawnCallback(function()
+		model_to_use = nil
+		if team == 0  then
+			if math.random(1, 2) == 1  then
+				model_to_use = GetHashKey(models_m[math.random(1, #models_m)])
+			else
+				model_to_use = GetHashKey(models_f[math.random(1, #models_f)])
+			end
+		else
+			model_to_use = GetHashKey(models_cop[math.random(1, #models_cop)])
+		end
+
         exports.spawnmanager:spawnPlayer({
             x = spawnPos.x,
             y = spawnPos.y,
             z = spawnPos.z,
             model = model_to_use
-        }, function()
-            
+		}, function()
+			if team == 1 then
+				GiveWeaponToPed(PlayerPedId(), GetHashKey("weapon_stungun"), 999, false, false)
+			end
         end)
     end)
 
@@ -64,9 +71,18 @@ Citizen.CreateThread(function()
 		if GetPlayerWantedLevel(PlayerId()) ~= 0 then
             SetPlayerWantedLevel(PlayerId(), 0, false) -- https://runtime.fivem.net/doc/natives/?_0x39FF19C64EF7DA5B
             SetPlayerWantedLevelNow(PlayerId(), false)
-        end
+		end
     end 
 end)
+
+
+
+-- Citizen.CreateThread(function()
+-- 	while true do
+-- 		Citizen.Wait(500)
+		
+--     end
+-- end)
 
 RegisterCommand("name",  function()
 	name = GetPlayerName(PlayerId())
@@ -145,7 +161,9 @@ RegisterCommand("spawn-ped", function()
 	SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
 	SetPedMaxHealth(newPed, 10)
 	
-	TaskWanderInArea(newPed, pos.x + 5, pos.y, pos.z, 20.0, 5.0, 0.0)
+	TaskWanderInArea(newPed, pos.x, pos.y, pos.z, 10.0, 1.0, 2.0)
+
+	-- TaskWanderInArea(newPed, pos.x + 5, pos.y, pos.z, 20.0, 5.0, 0.0)
 	-- TaskWanderStandard(newPed, 1.0, 1)
 	
 	-- ped, x, y, z, speed, timeout, heading, distance to slide
@@ -176,15 +194,15 @@ end, false)
 RegisterCommand("spawn-group", function()
 	local pos = GetEntityCoords(PlayerPedId())
 
-	for i=1,20,1 do
+	for i=1,40,1 do
 		local ped = nil
 		local type = 4
-		-- if math.random(1, 2) == 1 then 
-		ped = GetHashKey(models_m[math.random(1, #models_m)])
-		-- else 
-		-- 	ped = GetHashKey(models_f[math.random(1, #models_f)])
-		-- 	type = 5
-		-- end
+		if math.random(1, 2) == 1 then 
+			ped = GetHashKey(models_m[math.random(1, #models_m)])
+		else 
+			ped = GetHashKey(models_f[math.random(1, #models_f)])
+			type = 5
+		end
 		
 		RequestModel(ped)
 		while not HasModelLoaded(ped) do 
@@ -192,20 +210,21 @@ RegisterCommand("spawn-group", function()
 		end
 		
 		--[[refer above (4 only works for male peds and 5 is for female peds)]]
-		newPed = CreatePed(type, ped, pos.x + math.random(-8, 8), pos.y + math.random(-8, 8), pos.z , 0.0, true, true)
+		newPed = CreatePed(type, ped, pos.x + math.random(-12, 12), pos.y + math.random(-12, 12), pos.z + 6, 0.0, true, true)
 		
 		SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
 		SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
 
-		TaskFlushRoute()
-		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		TaskFollowPointRoute(newPed, 1, 0)
+		TaskWanderInArea(newPed, pos.x, pos.y, pos.z, 10.0, 1.0, 1.0)
+		-- TaskFlushRoute()
+		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
+		-- TaskFollowPointRoute(newPed, 1, 0)
 	end
 
 	for x=1,#models_m do
