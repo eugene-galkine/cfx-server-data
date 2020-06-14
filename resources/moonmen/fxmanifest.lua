@@ -5,6 +5,4 @@ client_scripts {
     'client_test.lua'
 }
 
-server_scripts {
-    'server_world.lua'
-}
+server_script "server_world.lua"

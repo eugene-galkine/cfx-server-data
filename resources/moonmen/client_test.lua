@@ -1,23 +1,45 @@
---void REGISTER_COMMAND(char* commandName, func handler, BOOL restricted);
+RegisterNetEvent("setTeam")
 
-local spawnPos = vector3(-988, -2985, 13.95)
+local spawnPos = vector3(233.3, 215.6, 106.28)
+
+local team = nil
 
 AddEventHandler('onClientGameTypeStart', function()
+	TriggerServerEvent("requestTeam", PlayerId())
+	-- while team == nil do
+	-- 	Citizen.wait(10)
+	-- end
+
+	model_to_use = "csb_reporter"
+	-- if team == "COP" then
+	-- 	model_to_use = "S_M_M_Armoured_01"
+	-- else
+	-- 	model_to_use = "csb_reporter"
+	-- end
+
     exports.spawnmanager:setAutoSpawnCallback(function()
         exports.spawnmanager:spawnPlayer({
             x = spawnPos.x,
             y = spawnPos.y,
             z = spawnPos.z,
-            model = 'a_m_m_skater_01'
+            model = model_to_use
         }, function()
-            TriggerEvent('chat:addMessage', {
-                args = {'Welcome to the party!'}
-            })
+            
         end)
     end)
 
     exports.spawnmanager:setAutoSpawn(true)
     exports.spawnmanager:forceRespawn()
+end)
+
+AddEventHandler("playerSpawned", function()
+    NetworkSetFriendlyFireOption(true)
+    SetCanAttackFriendly(PlayerPedId(), true, false)
+end)
+
+AddEventHandler("setTeam", function(_team)
+	TriggerEvent("chatMessage", "ERROR", {255, 0, 0}, "team set")
+	team = _team
 end)
 
 Citizen.CreateThread(function()
@@ -83,7 +105,8 @@ RegisterCommand("spawn", function(source, args)
 end, false)
 
 RegisterCommand("set-team", function(source, args)
-	
+	local team = args[1] or "COP"
+	SetPedRelationshipGroupHash(PlayerPedId(), team)
 end, false)
 
 RegisterCommand("weapon", function(source, args)
@@ -107,14 +130,14 @@ RegisterCommand("spawn-ped", function()
 	end
 	
 	--[[refer above (4 only works for male peds and 5 is for female peds)]]
-	newPed = CreatePed(4, ped, pos.x + 5, pos.y, pos.z , 0.0, false, true)
+	newPed = CreatePed(4, ped, pos.x + 5, pos.y, pos.z , 0.0, true, true)
 
 	SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
 	SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
 	SetPedMaxHealth(newPed, 10)
 	
-	--TaskWanderInArea(newPed, pos.x + 5, pos.y, pos.z, 20.0, 5.0, 0.0)
-	TaskWanderStandard(newPed, 1.0, 1)
+	TaskWanderInArea(newPed, pos.x + 5, pos.y, pos.z, 20.0, 5.0, 0.0)
+	-- TaskWanderStandard(newPed, 1.0, 1)
 	
 	-- ped, x, y, z, speed, timeout, heading, distance to slide
 	-- TaskGoStraightToCoord(newPed, pos.x,  pos.y + 30, pos.z, 1, 999999999, 0, 0)
@@ -147,15 +170,15 @@ RegisterCommand("spawn-group", function()
 	
 	local pos = GetEntityCoords(PlayerPedId())
 
-	for i=1,10,1 do
+	for i=1,20,1 do
 		local ped = nil
 		local type = 4
-		if math.random(1, 2) == 1 then 
-			ped = GetHashKey(models_m[math.random(1, #models_m)])
-		else 
-			ped = GetHashKey(models_f[math.random(1, #models_f)])
-			type = 5
-		end
+		-- if math.random(1, 2) == 1 then 
+		ped = GetHashKey("csb_reporter")
+		-- else 
+		-- 	ped = GetHashKey(models_f[math.random(1, #models_f)])
+		-- 	type = 5
+		-- end
 		
 		RequestModel(ped)
 		while not HasModelLoaded(ped) do 
@@ -163,7 +186,7 @@ RegisterCommand("spawn-group", function()
 		end
 		
 		--[[refer above (4 only works for male peds and 5 is for female peds)]]
-		newPed = CreatePed(type, ped, pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z , 0.0, false, true)
+		newPed = CreatePed(type, ped, pos.x + math.random(-8, 8), pos.y + math.random(-8, 8), pos.z , 0.0, true, true)
 		
 		SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
 		SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
