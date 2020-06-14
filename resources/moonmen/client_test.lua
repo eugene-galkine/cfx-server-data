@@ -1,11 +1,12 @@
 RegisterNetEvent("setTeam")
 
 local spawnPos = vector3(233.3, 215.6, 106.28)
+local copSpawnPos = vector3(263.05, 207.82, 110.3)
 
 local team = 0
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
-local models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
+local models_f = { "a_f_y_fitness_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
 AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
 
@@ -24,20 +25,23 @@ AddEventHandler('onClientGameTypeStart', function()
 
 	exports.spawnmanager:setAutoSpawnCallback(function()
 		model_to_use = nil
+		pos = nil
 		if team == 0  then
+			pos = spawnPos
 			if math.random(1, 2) == 1  then
 				model_to_use = GetHashKey(models_m[math.random(1, #models_m)])
 			else
 				model_to_use = GetHashKey(models_f[math.random(1, #models_f)])
 			end
 		else
+			pos = copSpawnPos
 			model_to_use = GetHashKey(models_cop[math.random(1, #models_cop)])
 		end
 
         exports.spawnmanager:spawnPlayer({
-            x = spawnPos.x,
-            y = spawnPos.y,
-            z = spawnPos.z,
+            x = pos.x,
+            y = pos.y,
+            z = pos.z,
             model = model_to_use
 		}, function()
 			if team == 1 then
@@ -216,15 +220,6 @@ RegisterCommand("spawn-group", function()
 		SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
 
 		TaskWanderInArea(newPed, pos.x, pos.y, pos.z, 10.0, 1.0, 1.0)
-		-- TaskFlushRoute()
-		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		-- TaskExtendRoute(pos.x + math.random(-5, 5), pos.y + math.random(-5, 5), pos.z)
-		-- TaskFollowPointRoute(newPed, 1, 0)
 	end
 
 	for x=1,#models_m do
@@ -234,8 +229,6 @@ RegisterCommand("spawn-group", function()
 		SetModelAsNoLongerNeeded(model)
 	end
 end, false)
-
--- TODO must stop playernames to hide names
 
 
 -- RequestModel(object_model)
