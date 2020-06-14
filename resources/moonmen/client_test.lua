@@ -3,6 +3,11 @@ RegisterNetEvent("setTeam")
 local spawnPos = vector3(233.3, 215.6, 106.28)
 
 local team = nil
+local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
+local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01"}
+local models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01"} -- todo
+AddRelationshipGroup("robbers")
+AddRelationshipGroup("civ")
 
 AddEventHandler('onClientGameTypeStart', function()
 	TriggerServerEvent("requestTeam", PlayerId())
@@ -10,7 +15,13 @@ AddEventHandler('onClientGameTypeStart', function()
 	-- 	Citizen.wait(10)
 	-- end
 
-	model_to_use = "csb_reporter"
+	model_to_use = nil
+	if GetPlayerName(PlayerId()) == "Limoncio2" then
+		model_to_use = GetHashKey(models_cop[math.random(1, #models_cop)])
+		SetPedRelationshipGroupHash(PlayerPedId(), "COP")
+	else
+		model_to_use = GetHashKey(models_m[math.random(1, #models_m)])
+	end
 	-- if team == "COP" then
 	-- 	model_to_use = "S_M_M_Armoured_01"
 	-- else
@@ -57,8 +68,11 @@ Citizen.CreateThread(function()
     end 
 end)
 
-RegisterCommand("test",  function()
-	TriggerEvent('chatMessage', "[SERVER]", {100, 100, 100}, "banana")
+RegisterCommand("name",  function()
+	name = GetPlayerName(PlayerId())
+	TriggerEvent('chat:addMessage', {
+		args = { name }
+	})
 end, false)
 
 RegisterCommand("where", function() 
@@ -116,12 +130,7 @@ RegisterCommand("weapon", function(source, args)
 	GiveWeaponToPed(PlayerPedId(), GetHashKey(weapon), 999, false, false)
 end, false)
 
-AddRelationshipGroup("robbers")
-AddRelationshipGroup("civ")
-
 RegisterCommand("spawn-ped", function()
-	models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
-	
 	local pos = GetEntityCoords(PlayerPedId())
 	ped = "csb_reporter"
 	RequestModel(ped)
@@ -165,16 +174,13 @@ RegisterCommand("spawn-ped", function()
 end, false)
 
 RegisterCommand("spawn-group", function()
-	models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01"}
-	models_f = { "a_f_y_fitness_01", "a_f_y_hiker_01", "a_f_y_business_01"} -- todo
-	
 	local pos = GetEntityCoords(PlayerPedId())
 
 	for i=1,20,1 do
 		local ped = nil
 		local type = 4
 		-- if math.random(1, 2) == 1 then 
-		ped = GetHashKey("csb_reporter")
+		ped = GetHashKey(models_m[math.random(1, #models_m)])
 		-- else 
 		-- 	ped = GetHashKey(models_f[math.random(1, #models_f)])
 		-- 	type = 5
