@@ -40,8 +40,6 @@ AddEventHandler('onClientGameTypeStart', function()
             model = model_to_use
 		}, nil)
     end)
-
-    exports.spawnmanager:setAutoSpawn(true)
     exports.spawnmanager:forceRespawn()
 end)
 
@@ -51,7 +49,8 @@ AddEventHandler("playerSpawned", function()
 	end
 
     NetworkSetFriendlyFireOption(true)
-    SetCanAttackFriendly(PlayerPedId(), true, false)
+	SetCanAttackFriendly(PlayerPedId(), true, false)
+	-- freezePlayer(PlayerId(), true)
 end)
 
 AddEventHandler("setTeam", function(_team)
@@ -234,6 +233,10 @@ end
 
 RegisterCommand("respawn", function()
 	exports.spawnmanager:forceRespawn()
+end, false)
+
+RegisterCommand("die", function()
+	SetEntityHealth(PlayerPedId(), 0)
 end, false)
 
 -- RequestModel(object_model)

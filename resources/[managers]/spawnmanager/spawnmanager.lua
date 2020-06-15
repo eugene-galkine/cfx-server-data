@@ -340,19 +340,23 @@ Citizen.CreateThread(function()
 
         if playerPed and playerPed ~= -1 then
             -- check if we want to autospawn
-            if autoSpawnEnabled then
+            -- if autoSpawnEnabled then
                 if NetworkIsPlayerActive(PlayerId()) then
-                    if (diedAt and (math.abs(GetTimeDifference(GetGameTimer(), diedAt)) > 2000)) or respawnForced then
-                        if autoSpawnCallback then
-                            autoSpawnCallback()
-                        else
-                            spawnPlayer()
-                        end
-
+                    if respawnForced  then
+                        autoSpawnCallback()
                         respawnForced = false
                     end
+                    -- if (diedAt and (math.abs(GetTimeDifference(GetGameTimer(), diedAt)) > 2000)) or respawnForced then
+                    --     if autoSpawnCallback then
+                    --         autoSpawnCallback()
+                    --     else
+                    --         spawnPlayer()
+                    --     end
+
+                    --     respawnForced = false
+                    -- end
                 end
-            end
+            -- end
 
             if IsEntityDead(playerPed) then
                 if not diedAt then
