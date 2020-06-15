@@ -3,7 +3,7 @@ RegisterNetEvent("setTeam")
 local spawnPos = vector3(233.3, 215.6, 106.28)
 local copSpawnPos = vector3(263.05, 207.82, 110.3)
 
-local team = 0
+local team = -1
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
 local models_f = { "a_f_y_fitness_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
@@ -11,12 +11,7 @@ AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
 
 AddEventHandler('onClientGameTypeStart', function()
-	-- TriggerServerEvent("requestTeam", PlayerId())
-	if GetPlayerName(PlayerId()) == "Limoncio2" then
-		team = 1
-	else
-		team = 0
-	end
+	TriggerServerEvent("requestTeam", GetPlayerServerId(t))
 
 	exports.spawnmanager:setAutoSpawnCallback(function()
 		model_to_use = nil
@@ -53,9 +48,12 @@ AddEventHandler("playerSpawned", function()
 	-- freezePlayer(PlayerId(), true)
 end)
 
-AddEventHandler("setTeam", function(_team)
-	TriggerEvent("chatMessage", "ERROR", {255, 0, 0}, "team set")
-	team = _team
+AddEventHandler("setTeam", function(test)
+	team = tonumber(test)
+	exports.spawnmanager:forceRespawn()
+	-- TriggerEvent('chat:addMessage', {
+	-- 	args = { test }
+	-- })
 end)
 
 Citizen.CreateThread(function()
@@ -101,7 +99,6 @@ RegisterCommand("spawn", function(source, args)
         return
     end
 	
-	-- load the model
     RequestModel(vehicleName)
 
     -- wait for the model to load
@@ -109,17 +106,11 @@ RegisterCommand("spawn", function(source, args)
         Wait(500) -- often you'll also see Citizen.Wait
     end
 
-    -- get the player's position
-    local playerPed = PlayerPedId() -- get the local player ped
-    local pos = GetEntityCoords(playerPed) -- get the position of the local player ped
+    local pos = GetEntityCoords(PlayerPedId())
 
-    -- create the vehicle
     local vehicle = CreateVehicle(vehicleName, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
-    -- set the player ped into the vehicle's driver seat
     SetPedIntoVehicle(playerPed, vehicle, -1)
-    -- give the vehicle back to the game (this'll make the game decide when to despawn the vehicle)
     SetEntityAsNoLongerNeeded(vehicle)
-    -- release the model
     SetModelAsNoLongerNeeded(vehicleName)
 end, false)
 
