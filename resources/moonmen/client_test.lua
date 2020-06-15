@@ -12,13 +12,8 @@ AddRelationshipGroup("civ")
 
 AddEventHandler('onClientGameTypeStart', function()
 	-- TriggerServerEvent("requestTeam", PlayerId())
-	-- while team == nil do
-	-- 	Citizen.wait(10)
-	-- end
-	
 	if GetPlayerName(PlayerId()) == "Limoncio2" then
 		team = 1
-		-- SetPedRelationshipGroupHash(PlayerPedId(), "COP")
 	else
 		team = 0
 	end
@@ -43,11 +38,7 @@ AddEventHandler('onClientGameTypeStart', function()
             y = pos.y,
             z = pos.z,
             model = model_to_use
-		}, function()
-			if team == 1 then
-				GiveWeaponToPed(PlayerPedId(), GetHashKey("weapon_stungun"), 999, false, false)
-			end
-        end)
+		}, nil)
     end)
 
     exports.spawnmanager:setAutoSpawn(true)
@@ -55,6 +46,10 @@ AddEventHandler('onClientGameTypeStart', function()
 end)
 
 AddEventHandler("playerSpawned", function()
+	if team == 1 then
+		GiveWeaponToPed(PlayerPedId(), GetHashKey("weapon_stungun"), 999, false, false)
+	end
+
     NetworkSetFriendlyFireOption(true)
     SetCanAttackFriendly(PlayerPedId(), true, false)
 end)
@@ -78,15 +73,6 @@ Citizen.CreateThread(function()
 		end
     end 
 end)
-
-
-
--- Citizen.CreateThread(function()
--- 	while true do
--- 		Citizen.Wait(500)
-		
---     end
--- end)
 
 RegisterCommand("name",  function()
 	name = GetPlayerName(PlayerId())
@@ -150,6 +136,8 @@ RegisterCommand("weapon", function(source, args)
 	GiveWeaponToPed(PlayerPedId(), GetHashKey(weapon), 999, false, false)
 end, false)
 
+local spawnedPeds = {}
+
 RegisterCommand("spawn-ped", function()
 	local pos = GetEntityCoords(PlayerPedId())
 	ped = "csb_reporter"
@@ -166,6 +154,8 @@ RegisterCommand("spawn-ped", function()
 	SetPedMaxHealth(newPed, 10)
 	
 	TaskWanderInArea(newPed, pos.x, pos.y, pos.z, 10.0, 1.0, 2.0)
+
+	table.insert(spawnedPeds, newPed)
 
 	-- TaskWanderInArea(newPed, pos.x + 5, pos.y, pos.z, 20.0, 5.0, 0.0)
 	-- TaskWanderStandard(newPed, 1.0, 1)
@@ -220,6 +210,7 @@ RegisterCommand("spawn-group", function()
 		SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
 
 		TaskWanderInArea(newPed, pos.x, pos.y, pos.z, 10.0, 1.0, 1.0)
+		table.insert(spawnedPeds, newPed)
 	end
 
 	for x=1,#models_m do
@@ -230,6 +221,20 @@ RegisterCommand("spawn-group", function()
 	end
 end, false)
 
+RegisterCommand("cleanup", function()
+	cleanup()
+end, false)
+
+function  cleanup()
+	for i = 1, #spawnedPeds do
+		ped = spawnedPeds[i]
+		DeletePed(ped)
+	end
+end
+
+RegisterCommand("respawn", function()
+	exports.spawnmanager:forceRespawn()
+end, false)
 
 -- RequestModel(object_model)
 -- local iter_for_request = 1
