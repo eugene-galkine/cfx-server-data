@@ -52,10 +52,15 @@ AddEventHandler("setTeam", function(test)
 	team = tonumber(test)
 
 	Citizen.CreateThread(function()
-		Citizen.Wait(100)
+		Citizen.Wait(250)
 		exports.spawnmanager:forceRespawn()
 	end)
 end)
+
+RegisterCommand("set-team", function(source, args)
+	team = tonumber(args[1] or 1)
+	exports.spawnmanager:forceRespawn()
+end, false)
 
 Citizen.CreateThread(function()
     while true do
@@ -113,11 +118,6 @@ RegisterCommand("spawn", function(source, args)
     SetPedIntoVehicle(playerPed, vehicle, -1)
     SetEntityAsNoLongerNeeded(vehicle)
     SetModelAsNoLongerNeeded(vehicleName)
-end, false)
-
-RegisterCommand("set-team", function(source, args)
-	local team = args[1] or "COP"
-	SetPedRelationshipGroupHash(PlayerPedId(), team)
 end, false)
 
 RegisterCommand("weapon", function(source, args)
