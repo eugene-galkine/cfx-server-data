@@ -3,12 +3,34 @@ RegisterNetEvent("setTeam")
 local spawnPos = vector3(233.3, 215.6, 106.28)
 local copSpawnPos = vector3(263.05, 207.82, 110.3)
 
+local objective_duration = 15
+local objective_time = objective_duration
+
 local team = -1
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
 local models_f = { "a_f_y_fitness_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
 AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
+
+-- TODO https://docs.fivem.net/docs/game-references/blips/
+-- local blip = AddBlipForCoord(v2.x, v2.y)
+-- -- sets the blip id (which icon will be desplayed)
+-- -- https://runtime.fivem.net/doc/natives/#_0xDF735600A4696DAF
+-- SetBlipSprite(blip, 364)
+-- -- sets where the blip to be shown on both the minimap and the menu map 
+-- -- https://runtime.fivem.net/doc/natives/#_0x9029B2F3DA924928
+-- SetBlipDisplay(blip, 6)
+-- -- how big the blip will be
+-- -- https://runtime.fivem.net/doc/natives/#_0xD38744167B2FA257
+-- SetBlipScale(blip, 0.9)
+-- -- blip entry type
+-- BeginTextCommandSetBlipName("STRING");
+-- -- The title of the blip
+-- AddTextComponentString("Do not enter")
+-- EndTextCommandSetBlipName(blip)
+
+-- TODO changeGameType???  https://docs.fivem.net/docs/resources/mapmanager/
 
 AddEventHandler('onClientGameTypeStart', function()
 	TriggerServerEvent("requestTeam", GetPlayerServerId(t))
@@ -46,6 +68,7 @@ AddEventHandler("playerSpawned", function()
 
     NetworkSetFriendlyFireOption(true)
 	SetCanAttackFriendly(PlayerPedId(), true, false)
+	objective_time = objective_duration
 end)
 
 AddEventHandler("setTeam", function(test)
@@ -74,7 +97,35 @@ Citizen.CreateThread(function()
             SetPlayerWantedLevel(PlayerId(), 0, false) -- https://runtime.fivem.net/doc/natives/?_0x39FF19C64EF7DA5B
             SetPlayerWantedLevelNow(PlayerId(), false)
 		end
+
+
+		-- GpsMarker
+		-- DrawMarker https://docs.fivem.net/docs/game-references/markers/ https://runtime.fivem.net/doc/natives/?_0x28477EC23D892089
+		-- DrawMarker(1, spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, false, false, 2, false, nil, nil, true)
+		DrawMarker(1, spawnPos.x, spawnPos.y, 105.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 3.5 --[[ scaleX ]], 3.5 --[[ scaleY]], 1.3 --[[ scaleZ ]], 255 --[[red]], 255--[[green]], 0--[[blue]], 100 --[[alpa]], 0, 0, 2, 0, 0, 0, false )
     end 
+end)
+
+Citizen.CreateThread(function()
+    while true do
+		Citizen.Wait(1000)
+
+		if team == 0 then
+			pos = GetEntityCoords(PlayerPedId())
+			if not IsEntityDead(PlayerPedId()) and GetDistanceBetweenCoords(spawnPos.x, spawnPos.y, spawnPos.z, pos) < 2.0  then
+				objective_time = objective_time - 1
+				TriggerEvent('chat:addMessage', {
+					args = { objective_time }
+				})
+				if objective_time <= 0 then
+					-- TODO network message
+					TriggerEvent('chat:addMessage', {
+						args = { "win!" }
+					})
+				end
+			end
+		end
+	end
 end)
 
 RegisterCommand("name",  function()
