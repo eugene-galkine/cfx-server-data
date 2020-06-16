@@ -28,6 +28,7 @@ AddEventHandler('onClientGameTypeStart', function()
 			model_to_use = GetHashKey(models_cop[math.random(1, #models_cop)])
 		end
 
+		-- TODO set heading
         exports.spawnmanager:spawnPlayer({
             x = pos.x,
             y = pos.y,
@@ -45,15 +46,15 @@ AddEventHandler("playerSpawned", function()
 
     NetworkSetFriendlyFireOption(true)
 	SetCanAttackFriendly(PlayerPedId(), true, false)
-	-- freezePlayer(PlayerId(), true)
 end)
 
 AddEventHandler("setTeam", function(test)
 	team = tonumber(test)
-	exports.spawnmanager:forceRespawn()
-	-- TriggerEvent('chat:addMessage', {
-	-- 	args = { test }
-	-- })
+
+	Citizen.CreateThread(function()
+		Citizen.Wait(100)
+		exports.spawnmanager:forceRespawn()
+	end)
 end)
 
 Citizen.CreateThread(function()
@@ -215,7 +216,7 @@ RegisterCommand("cleanup", function()
 	cleanup()
 end, false)
 
-function  cleanup()
+function  cleanup() -- TODO: FIND_FIRST_PED, FIND_NEXT_PED and END_FIND_PED -- EnumeratePeds???
 	for i = 1, #spawnedPeds do
 		ped = spawnedPeds[i]
 		DeletePed(ped)
