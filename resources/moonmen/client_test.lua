@@ -2,14 +2,14 @@ RegisterNetEvent("setTeam")
 
 local spawnPos = vector3(233.3, 215.6, 106.28)
 local copSpawnPos = vector3(263.05, 207.82, 110.3)
-
 local objective_duration = 15
 local objective_time = objective_duration
-
+local spawnedPeds = {}
 local team = -1
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
 local models_f = { "a_f_y_fitness_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
+
 AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
 
@@ -31,6 +31,49 @@ AddRelationshipGroup("civ")
 -- EndTextCommandSetBlipName(blip)
 
 -- TODO changeGameType???  https://docs.fivem.net/docs/resources/mapmanager/
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        SetPedDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0x95E3D6257B166CF2
+        SetScenarioPedDensityMultiplierThisFrame(0, 0) -- https://runtime.fivem.net/doc/natives/#_0x7A556143A1C03898
+		SetRandomVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0xB3B3359379FE77D3
+		SetParkedVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0xEAE6DCC7EEE3DB1D
+        SetVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0x245A6883D966D537
+		if GetPlayerWantedLevel(PlayerId()) ~= 0 then
+            SetPlayerWantedLevel(PlayerId(), 0, false) -- https://runtime.fivem.net/doc/natives/?_0x39FF19C64EF7DA5B
+            SetPlayerWantedLevelNow(PlayerId(), false)
+		end
+
+
+		-- GpsMarker
+		-- DrawMarker https://docs.fivem.net/docs/game-references/markers/ https://runtime.fivem.net/doc/natives/?_0x28477EC23D892089
+		-- DrawMarker(1, spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, false, false, 2, false, nil, nil, true)
+		DrawMarker(1, spawnPos.x, spawnPos.y, 105.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 3.5 --[[ scaleX ]], 3.5 --[[ scaleY]], 1.3 --[[ scaleZ ]], 255 --[[red]], 255--[[green]], 0--[[blue]], 100 --[[alpa]], 0, 0, 2, 0, 0, 0, false )
+    end 
+end)
+
+Citizen.CreateThread(function()
+    while true do
+		Citizen.Wait(1000)
+
+		if team == 0 then
+			pos = GetEntityCoords(PlayerPedId())
+			if not IsEntityDead(PlayerPedId()) and GetDistanceBetweenCoords(spawnPos.x, spawnPos.y, spawnPos.z, pos) < 2.0  then
+				objective_time = objective_time - 1
+				TriggerEvent('chat:addMessage', {
+					args = { objective_time }
+				})
+				if objective_time <= 0 then
+					-- TODO network message
+					TriggerEvent('chat:addMessage', {
+						args = { "win!" }
+					})
+				end
+			end
+		end
+	end
+end)
 
 AddEventHandler('onClientGameTypeStart', function()
 	TriggerServerEvent("requestTeam", GetPlayerServerId(t))
@@ -84,101 +127,6 @@ RegisterCommand("set-team", function(source, args)
 	team = tonumber(args[1] or 1)
 	exports.spawnmanager:forceRespawn()
 end, false)
-
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(0)
-        SetPedDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0x95E3D6257B166CF2
-        SetScenarioPedDensityMultiplierThisFrame(0, 0) -- https://runtime.fivem.net/doc/natives/#_0x7A556143A1C03898
-		SetRandomVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0xB3B3359379FE77D3
-		SetParkedVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0xEAE6DCC7EEE3DB1D
-        SetVehicleDensityMultiplierThisFrame(0) -- https://runtime.fivem.net/doc/natives/#_0x245A6883D966D537
-		if GetPlayerWantedLevel(PlayerId()) ~= 0 then
-            SetPlayerWantedLevel(PlayerId(), 0, false) -- https://runtime.fivem.net/doc/natives/?_0x39FF19C64EF7DA5B
-            SetPlayerWantedLevelNow(PlayerId(), false)
-		end
-
-
-		-- GpsMarker
-		-- DrawMarker https://docs.fivem.net/docs/game-references/markers/ https://runtime.fivem.net/doc/natives/?_0x28477EC23D892089
-		-- DrawMarker(1, spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, false, false, 2, false, nil, nil, true)
-		DrawMarker(1, spawnPos.x, spawnPos.y, 105.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 3.5 --[[ scaleX ]], 3.5 --[[ scaleY]], 1.3 --[[ scaleZ ]], 255 --[[red]], 255--[[green]], 0--[[blue]], 100 --[[alpa]], 0, 0, 2, 0, 0, 0, false )
-    end 
-end)
-
-Citizen.CreateThread(function()
-    while true do
-		Citizen.Wait(1000)
-
-		if team == 0 then
-			pos = GetEntityCoords(PlayerPedId())
-			if not IsEntityDead(PlayerPedId()) and GetDistanceBetweenCoords(spawnPos.x, spawnPos.y, spawnPos.z, pos) < 2.0  then
-				objective_time = objective_time - 1
-				TriggerEvent('chat:addMessage', {
-					args = { objective_time }
-				})
-				if objective_time <= 0 then
-					-- TODO network message
-					TriggerEvent('chat:addMessage', {
-						args = { "win!" }
-					})
-				end
-			end
-		end
-	end
-end)
-
-RegisterCommand("name",  function()
-	name = GetPlayerName(PlayerId())
-	TriggerEvent('chat:addMessage', {
-		args = { name }
-	})
-end, false)
-
-RegisterCommand("where", function() 
-	local pos = GetEntityCoords(PlayerPedId())
-
-	TriggerEvent('chat:addMessage', {
-                args = {("X:%s  Y:%s  Z:%s"):format(pos.x, pos.y, pos.z)}
-            })
-end, false)
-
-RegisterCommand("spawn", function(source, args)
-	-- account for the argument not being passed
-    local vehicleName = args[1] or 'adder'
-
-    -- check if the vehicle actually exists
-    if not IsModelInCdimage(vehicleName) or not IsModelAVehicle(vehicleName) then
-        TriggerEvent('chat:addMessage', {
-            args = { 'Cant spawn that' }
-        })
-
-        return
-    end
-	
-    RequestModel(vehicleName)
-
-    -- wait for the model to load
-    while not HasModelLoaded(vehicleName) do
-        Wait(500) -- often you'll also see Citizen.Wait
-    end
-
-    local pos = GetEntityCoords(PlayerPedId())
-
-    local vehicle = CreateVehicle(vehicleName, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
-    SetPedIntoVehicle(playerPed, vehicle, -1)
-    SetEntityAsNoLongerNeeded(vehicle)
-    SetModelAsNoLongerNeeded(vehicleName)
-end, false)
-
-RegisterCommand("weapon", function(source, args)
-	-- weapon_pistol
-	-- weapon_pumpshotgun
-	local weapon = args[1] or "weapon_pistol"
-	GiveWeaponToPed(PlayerPedId(), GetHashKey(weapon), 999, false, false)
-end, false)
-
-local spawnedPeds = {}
 
 RegisterCommand("spawn-ped", function()
 	local pos = GetEntityCoords(PlayerPedId())
@@ -301,10 +249,6 @@ end
 
 RegisterCommand("respawn", function()
 	exports.spawnmanager:forceRespawn()
-end, false)
-
-RegisterCommand("die", function()
-	SetEntityHealth(PlayerPedId(), 0)
 end, false)
 
 -- RequestModel(object_model)
