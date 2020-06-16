@@ -138,7 +138,7 @@ RegisterCommand("spawn-ped", function()
 	end
 	
 	--[[refer above (4 only works for male peds and 5 is for female peds)]]
-	newPed = CreatePed(4, ped, pos.x + 5, pos.y, pos.z , 0.0, true, true)
+	newPed = CreatePed(4, ped, pos.x + 1, pos.y, pos.z , 0.0, true, true)
 
 	SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
 	SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
@@ -180,37 +180,62 @@ RegisterCommand("spawn-group", function()
 	local pos = GetEntityCoords(PlayerPedId())
 
 	for i=1,40,1 do
-		local ped = nil
-		local type = 4
-		if math.random(1, 2) == 1 then 
-			ped = GetHashKey(models_m[math.random(1, #models_m)])
-		else 
-			ped = GetHashKey(models_f[math.random(1, #models_f)])
-			type = 5
-		end
-		
-		RequestModel(ped)
-		while not HasModelLoaded(ped) do 
-			Citizen.Wait(1)
-		end
-		
-		--[[refer above (4 only works for male peds and 5 is for female peds)]]
-		newPed = CreatePed(type, ped, pos.x + math.random(-12, 12), pos.y + math.random(-12, 12), pos.z + 6, 0.0, true, true)
-		
-		SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
-		SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
-
-		TaskWanderInArea(newPed, pos.x, pos.y, pos.z, 10.0, 1.0, 1.0)
-		table.insert(spawnedPeds, newPed)
+		spawnPedInRange(pos, 12)
 	end
 
+	cleanupModels()
+end, false)
+
+RegisterCommand("init", function()
+	cleanup()
+
+	for i=1,4,1 do
+		spawnPedInRange(vector3(257.86, 218.0, 106.3), 1.0)
+		spawnPedInRange(vector3(253.3, 219.3, 106.3), 1.0)
+		spawnPedInRange(vector3(244.0, 216.5, 106.3), 2.0)
+		spawnPedInRange(vector3(241.4, 222.6, 106.3), 2.0)
+		spawnPedInRange(vector3(236.5, 226.2, 106.3), 1.0)
+		spawnPedInRange(vector3(253.3, 207.4, 110.3), 1.0)
+		spawnPedInRange(vector3(234.9, 216.2, 110.3), 1.0)
+	end
+
+	cleanupModels()
+end, false)
+
+function spawnPedInRange(pos, range)
+	local ped = nil
+	local type = 4
+	if math.random(1, 2) == 1 then 
+		ped = GetHashKey(models_m[math.random(1, #models_m)])
+	else 
+		ped = GetHashKey(models_f[math.random(1, #models_f)])
+		type = 5
+	end
+	
+	RequestModel(ped)
+	while not HasModelLoaded(ped) do 
+		Citizen.Wait(1)
+	end
+	
+	--[[refer above (4 only works for male peds and 5 is for female peds)]]
+	newPed = CreatePed(type, ped, pos.x + math.random(range * -1, range), pos.y + math.random(range * -1, range), pos.z, 0.0, true, true)
+	
+	SetPedRelationshipGroupHash(newPed, GetHashKey("civ"))
+	SetRelationshipBetweenGroups(0, GetHashKey("civ"), GetHashKey("PLAYER"))
+
+	pos = GetEntityCoords(newPed)
+	TaskWanderInArea(newPed, pos.x, pos.y, 106.3, 5.0, 1.0, 1.0)
+	table.insert(spawnedPeds, newPed)
+end
+
+function cleanupModels()
 	for x=1,#models_m do
-		SetModelAsNoLongerNeeded(model)
+		SetModelAsNoLongerNeeded(GetHashKey(model_m[x]))
 	end
 	for x=1,#models_f do
-		SetModelAsNoLongerNeeded(model)
+		SetModelAsNoLongerNeeded(GetHashKey(model_f[x]))
 	end
-end, false)
+end
 
 RegisterCommand("cleanup", function()
 	cleanup()
