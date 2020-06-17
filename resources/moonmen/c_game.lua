@@ -2,14 +2,14 @@ RegisterNetEvent("setTeam")
 
 local spawnPos = vector3(233.3, 215.6, 106.28)
 local copSpawnPos = vector3(263.05, 207.82, 110.3)
-local objective_duration = 10
+local objective_duration = 11 -- always add 1
 local objective_time = objective_duration
 local spawnedPeds = {}
 local team = -1
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
 local models_f = { "a_f_y_fitness_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
-local objectives = { {pos = vector3(256.3, 226.1, 100.5), name = "vault"}, {pos = vector3(262.5, 208.0, 109.18), name = "office"} }
+local objectives = { {pos = vector3(256.3, 226.1, 100.5), range = 2.0, name = "vault"}, {pos = vector3(262.3, 208.4, 109.18), range = 1.0, name = "office"} }
 
 AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
@@ -37,12 +37,9 @@ Citizen.CreateThread(function()
             SetPlayerWantedLevelNow(PlayerId(), false)
 		end
 
-
-		-- GpsMarker
 		-- DrawMarker https://docs.fivem.net/docs/game-references/markers/ https://runtime.fivem.net/doc/natives/?_0x28477EC23D892089
-		-- DrawMarker(1, spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, false, false, 2, false, nil, nil, true)
 		for i = 1, #objectives, 1 do
-			DrawMarker(1, objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 3.5 --[[ scaleX ]], 3.5 --[[ scaleY]], 1.3 --[[ scaleZ ]], 255 --[[red]], 255--[[green]], 0--[[blue]], 100 --[[alpa]], 0, 0, 2, 0, 0, 0, false)
+			DrawMarker(1, objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, objectives[i].range * 2.0 --[[ scaleX ]], objectives[i].range * 2.0 --[[ scaleY]], 1.2 --[[ scaleZ ]], 255 --[[red]], 255--[[green]], 0--[[blue]], 100 --[[alpa]], 0, 0, 2, 0, 0, 0, false)
 		end
 	end 
 end)
@@ -61,6 +58,8 @@ Citizen.CreateThread(function()
 				if objective_time <= 0 then
 					TriggerServerEvent("win", currentObjective.name)
 				end
+			elseif not IsEntityDead(PlayerPedId()) and objective_time > 0  then
+				objective_time = objective_duration
 			end
 		end
 	end
@@ -68,7 +67,7 @@ end)
 
 function isInRangeOfObjective(pos)
 	for i = 1, #objectives, 1 do
-		if GetDistanceBetweenCoords(objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, pos) < 2.0 and math.abs(objectives[i].pos.z - pos.z) < 2.0 then
+		if GetDistanceBetweenCoords(objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, pos) < objectives[i].range and math.abs(objectives[i].pos.z - pos.z) < 2.0 then
 			--store which objective we are capturing
 			currentObjective = objectives[i]
 			return true
