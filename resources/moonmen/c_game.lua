@@ -9,27 +9,18 @@ local team = -1
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
 local models_f = { "a_f_y_fitness_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
-local objectives = { {pos = vector3(256.3, 226.1, 100.5), name = "vault"}, {pos = vector3(262.5, 208.0, 109.18), name = "office"} }
+local objectives = { {pos = vector3(256.3, 226.1, 100.5), name = "Vault"}, {pos = vector3(262.5, 208.0, 109.18), name = "Office"} }
 
 AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
 
--- TODO https://docs.fivem.net/docs/game-references/blips/
--- local blip = AddBlipForCoord(v2.x, v2.y)
--- -- sets the blip id (which icon will be desplayed)
--- -- https://runtime.fivem.net/doc/natives/#_0xDF735600A4696DAF
--- SetBlipSprite(blip, 364)
--- -- sets where the blip to be shown on both the minimap and the menu map 
--- -- https://runtime.fivem.net/doc/natives/#_0x9029B2F3DA924928
--- SetBlipDisplay(blip, 6)
--- -- how big the blip will be
--- -- https://runtime.fivem.net/doc/natives/#_0xD38744167B2FA257
--- SetBlipScale(blip, 0.9)
--- -- blip entry type
--- BeginTextCommandSetBlipName("STRING");
--- -- The title of the blip
--- AddTextComponentString("Do not enter")
--- EndTextCommandSetBlipName(blip)
+-- https://docs.fivem.net/docs/game-references/blips/
+for i=1,#objectives,1 do
+	local blip = AddBlipForCoord(objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z)
+	BeginTextCommandSetBlipName("STRING");
+	AddTextComponentString(objectives[i].name)
+	EndTextCommandSetBlipName(blip)
+end
 
 -- TODO changeGameType???  https://docs.fivem.net/docs/resources/mapmanager/
 
@@ -82,7 +73,7 @@ end)
 
 function isInRangeOfObjective(pos)
 	for i = 1, #objectives, 1 do
-		if GetDistanceBetweenCoords(objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, pos) < 2.0 then
+		if GetDistanceBetweenCoords(objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, pos) < 2.0 and math.abs(objectives[i].pos.z - pos.z) < 2.0 then
 			return true
 		end
 	end
