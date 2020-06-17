@@ -9,6 +9,7 @@ local team = -1
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
 local models_f = { "a_f_y_fitness_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
+local objectives = { {pos = vector3(256.3, 226.1, 100.5), name = "vault"}, {pos = vector3(262.5, 208.0, 109.18), name = "office"} }
 
 AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
@@ -49,8 +50,10 @@ Citizen.CreateThread(function()
 		-- GpsMarker
 		-- DrawMarker https://docs.fivem.net/docs/game-references/markers/ https://runtime.fivem.net/doc/natives/?_0x28477EC23D892089
 		-- DrawMarker(1, spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, false, false, 2, false, nil, nil, true)
-		DrawMarker(1, spawnPos.x, spawnPos.y, 105.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 3.5 --[[ scaleX ]], 3.5 --[[ scaleY]], 1.3 --[[ scaleZ ]], 255 --[[red]], 255--[[green]], 0--[[blue]], 100 --[[alpa]], 0, 0, 2, 0, 0, 0, false )
-    end 
+		for i = 1, #objectives, 1 do
+			DrawMarker(1, objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 3.5 --[[ scaleX ]], 3.5 --[[ scaleY]], 1.3 --[[ scaleZ ]], 255 --[[red]], 255--[[green]], 0--[[blue]], 100 --[[alpa]], 0, 0, 2, 0, 0, 0, false)
+		end
+	end 
 end)
 
 Citizen.CreateThread(function()
@@ -59,10 +62,10 @@ Citizen.CreateThread(function()
 
 		if team == 0 then
 			pos = GetEntityCoords(PlayerPedId())
-			if not IsEntityDead(PlayerPedId()) and GetDistanceBetweenCoords(spawnPos.x, spawnPos.y, spawnPos.z, pos) < 2.0  then
+			if not IsEntityDead(PlayerPedId()) and isInRangeOfObjective(pos) then
 				objective_time = objective_time - 1
 				TriggerEvent('chat:addMessage', {
-					args = { objective_time }
+					args = { string.format("%i seconds remaining to win", objective_time) }
 				})
 				if objective_time <= 0 then
 					-- TODO network message
@@ -70,10 +73,22 @@ Citizen.CreateThread(function()
 						args = { "win!" }
 					})
 				end
+			else
+				objective_time = objective_duration
 			end
 		end
 	end
 end)
+
+function isInRangeOfObjective(pos)
+	for i = 1, #objectives, 1 do
+		if GetDistanceBetweenCoords(objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, pos) < 2.0 then
+			return true
+		end
+	end
+
+	return false
+end
 
 AddEventHandler('onClientGameTypeStart', function()
 	TriggerServerEvent("requestTeam", GetPlayerServerId(t))
