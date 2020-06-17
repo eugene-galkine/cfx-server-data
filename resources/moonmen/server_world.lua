@@ -1,4 +1,6 @@
 RegisterServerEvent("requestTeam")
+RegisterServerEvent("win")
+RegisterServerEvent("winProgress")
 
 local copCount = 0
 local robberCount = 0
@@ -13,18 +15,22 @@ AddEventHandler("requestTeam", function()
     end
 end)
 
+AddEventHandler("win", function(location)
+    globalChat(("%s has won by capturing the %s"):format(GetPlayerName(source), location))
+    --TODO end round and trigger restart
+end)
+
+AddEventHandler("winProgress", function(remaingTime)
+    globalChat(("%s will capture an objective in %d seconds"):format(GetPlayerName(source), remaingTime))
+end)
+
+function globalChat(message)
+    players = GetPlayers()
+    for i=1,#players do
+        TriggerClientEvent("chatMessage", players[i], message)
+    end
+end
+
 -- TODO make player zero the host, to spawn and clean up
 -- TODO implement better team init
 --  TODO implement rounds with switching off
-
--- function GetPlayers()
---     local players = {}
-
---     for i = 0, 31 do
---         if NetworkIsPlayerActive(i) then
---             table.insert(players, i)
---         end
---     end
-
---     return players
--- end

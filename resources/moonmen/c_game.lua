@@ -2,14 +2,14 @@ RegisterNetEvent("setTeam")
 
 local spawnPos = vector3(233.3, 215.6, 106.28)
 local copSpawnPos = vector3(263.05, 207.82, 110.3)
-local objective_duration = 15
+local objective_duration = 10
 local objective_time = objective_duration
 local spawnedPeds = {}
 local team = -1
 local models_cop = { "S_M_M_Armoured_01", "S_M_M_Armoured_02" }
 local models_m = { "csb_reporter", "a_m_y_bevhills_01", "a_m_m_skater_01", "a_m_m_fatlatin_01", "a_m_m_soucent_01"}
 local models_f = { "a_f_y_fitness_01", "a_f_y_business_01", "a_f_m_beach_01", "a_f_y_fitness_02"}
-local objectives = { {pos = vector3(256.3, 226.1, 100.5), name = "Vault"}, {pos = vector3(262.5, 208.0, 109.18), name = "Office"} }
+local objectives = { {pos = vector3(256.3, 226.1, 100.5), name = "vault"}, {pos = vector3(262.5, 208.0, 109.18), name = "office"} }
 
 AddRelationshipGroup("robbers")
 AddRelationshipGroup("civ")
@@ -47,25 +47,20 @@ Citizen.CreateThread(function()
 	end 
 end)
 
+local currentObjective = objectives[1];
 Citizen.CreateThread(function()
     while true do
 		Citizen.Wait(1000)
 
 		if team == 0 then
 			pos = GetEntityCoords(PlayerPedId())
-			if not IsEntityDead(PlayerPedId()) and isInRangeOfObjective(pos) then
+			if not IsEntityDead(PlayerPedId()) and isInRangeOfObjective(pos) and objective_time > 0 then
 				objective_time = objective_time - 1
-				TriggerEvent('chat:addMessage', {
-					args = { string.format("%i seconds remaining to win", objective_time) }
-				})
+				TriggerServerEvent("winProgress", objective_time)
+
 				if objective_time <= 0 then
-					-- TODO network message
-					TriggerEvent('chat:addMessage', {
-						args = { "win!" }
-					})
+					TriggerServerEvent("win", currentObjective.name)
 				end
-			else
-				objective_time = objective_duration
 			end
 		end
 	end
@@ -74,6 +69,8 @@ end)
 function isInRangeOfObjective(pos)
 	for i = 1, #objectives, 1 do
 		if GetDistanceBetweenCoords(objectives[i].pos.x, objectives[i].pos.y, objectives[i].pos.z, pos) < 2.0 and math.abs(objectives[i].pos.z - pos.z) < 2.0 then
+			--store which objective we are capturing
+			currentObjective = objectives[i]
 			return true
 		end
 	end
@@ -82,7 +79,7 @@ function isInRangeOfObjective(pos)
 end
 
 AddEventHandler('onClientGameTypeStart', function()
-	TriggerServerEvent("requestTeam", GetPlayerServerId(t))
+	TriggerServerEvent("requestTeam")
 
 	exports.spawnmanager:setAutoSpawnCallback(function()
 		model_to_use = nil
@@ -192,6 +189,7 @@ RegisterCommand("spawn-group", function()
 end, false)
 
 RegisterCommand("init", function()
+	objective_time = objective_duration
 	cleanup()
 
 	for i=1,4,1 do
